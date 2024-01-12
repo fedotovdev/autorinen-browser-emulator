@@ -11,16 +11,17 @@ const nb_1 = __importDefault(require("dayjs/locale/nb"));
 const telegraf_1 = require("telegraf");
 const aws_sdk_1 = __importDefault(require("aws-sdk"));
 const fs_1 = __importDefault(require("fs"));
+const node_cron_1 = __importDefault(require("node-cron"));
 dayjs_1.default.locale(Object.assign({}, nb_1.default)); // use Norwegian locale globally
 const { AUTORINGEN_EMAIL, AUTORINGEN_PASSWORD } = process.env;
 const main = async () => {
-    await simulateBrowserRecording();
-    // if (process.env.NODE_ENV === 'production') {
-    //     cron.schedule('0 11 * * *', simulateBrowserRecording)
-    //     cron.schedule('0 14 * * *', simulateBrowserRecording)
-    // } else {
-    //     simulateBrowserRecording()
-    // }
+    if (process.env.NODE_ENV === 'production') {
+        node_cron_1.default.schedule('0 11 * * *', simulateBrowserRecording);
+        node_cron_1.default.schedule('0 14 * * *', simulateBrowserRecording);
+    }
+    else {
+        simulateBrowserRecording();
+    }
 };
 const simulateBrowserRecording = async () => {
     const screenRecorderConfig = {
