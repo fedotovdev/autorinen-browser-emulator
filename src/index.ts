@@ -14,13 +14,12 @@ dayjs.locale({ ...nb }) // use Norwegian locale globally
 const { AUTORINGEN_EMAIL, AUTORINGEN_PASSWORD } = process.env
 
 const main = async () => {
-    await simulateBrowserRecording()
-    // if (process.env.NODE_ENV === 'production') {
-    //     cron.schedule('0 11 * * *', simulateBrowserRecording)
-    //     cron.schedule('0 14 * * *', simulateBrowserRecording)
-    // } else {
-    //     simulateBrowserRecording()
-    // }
+    if (process.env.NODE_ENV === 'production') {
+        cron.schedule('0 11 * * *', simulateBrowserRecording)
+        cron.schedule('0 14 * * *', simulateBrowserRecording)
+    } else {
+        simulateBrowserRecording()
+    }
 }
 
 const simulateBrowserRecording = async () => {
