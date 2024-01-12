@@ -43,9 +43,9 @@ const simulateBrowserRecording = async () => {
 
     try {
         const browser = await puppeteer.launch({
-            headless: false,
+            headless: true,
             defaultViewport: null,
-            args: ['--disable-features=site-per-process'],
+            args: ['--disable-features=site-per-process', '--no-sandbox', '--disable-setuid-sandbox'],
         })
         const page = await browser.newPage()
         await page.setViewport({
