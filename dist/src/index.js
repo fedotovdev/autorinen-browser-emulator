@@ -81,8 +81,8 @@ const simulateBrowserRecording = async () => {
         const savePath = `./videos/${currentTime}.mp4`;
         await recorder.start(savePath);
         console.info('-- Recording started --');
-        /** Record for 1 minutes */
-        const duration = 60000 / 15;
+        /** Record for 2 hours */
+        const duration = 1000 * 60 * 60 * 2;
         await new Promise((resolve) => setTimeout(resolve, duration));
         await recorder.stop();
         console.info('-- Recording stopped --');
