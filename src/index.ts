@@ -13,6 +13,8 @@ dayjs.locale({ ...nb }) // use Norwegian locale globally
 
 const { AUTORINGEN_EMAIL, AUTORINGEN_PASSWORD } = process.env
 
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN as string)
+
 const main = async () => {
     if (process.env.NODE_ENV === 'production') {
         cron.schedule('0 11 * * *', simulateBrowserRecording)
@@ -93,12 +95,15 @@ const simulateBrowserRecording = async () => {
         await recorder.start(savePath)
         console.info('-- Recording started --')
 
+        await bot.telegram.sendMessage(6450576633, `Recording started at: ${dayjs().format('YYYY-MM-DD-HH-mm')}`)
+
         /** Record for 2 hours */
         const duration = 1000 * 60 * 60 * 2
         await new Promise((resolve) => setTimeout(resolve, duration))
 
         await recorder.stop()
         console.info('-- Recording stopped --')
+        await bot.telegram.sendMessage(6450576633, `Recording stopped at: ${dayjs().format('YYYY-MM-DD-HH-mm')}`)
 
         await browser.close()
 
@@ -116,6 +121,8 @@ const saveVideoToS3 = async (filePath: string): Promise<{ location: string }> =>
      */
 
     try {
+        const fileName = dayjs().format('YYYY-MM-DD-HH-mm')
+
         const s3 = new AWS.S3({
             accessKeyId: process.env.AWS_ACCESS_KEY_ID,
             secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -125,7 +132,7 @@ const saveVideoToS3 = async (filePath: string): Promise<{ location: string }> =>
 
         const params = {
             Bucket: 'autoringen-fetcher-v2',
-            Key: 'screen-recordings/video.mp4',
+            Key: `screen-recordings/${fileName}.mp4`,
             Body: fileContent,
             ContentType: 'video/mp4',
         }
@@ -147,10 +154,7 @@ const sendVideoToTelegramBot = async (s3VideoUrl: string) => {
     /**
      * Send video to telegram bot
      */
-
     try {
-        const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN as string)
-
         await bot.telegram.sendMessage(6450576633, `New recording available at: ${s3VideoUrl}`)
 
         console.info('Video sent to telegram bot')
