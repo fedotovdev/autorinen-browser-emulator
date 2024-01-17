@@ -14,6 +14,7 @@ const fs_1 = __importDefault(require("fs"));
 const node_cron_1 = __importDefault(require("node-cron"));
 dayjs_1.default.locale(Object.assign({}, nb_1.default)); // use Norwegian locale globally
 const { AUTORINGEN_EMAIL, AUTORINGEN_PASSWORD } = process.env;
+const bot = new telegraf_1.Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const main = async () => {
     if (process.env.NODE_ENV === 'production') {
         node_cron_1.default.schedule('0 11 * * *', simulateBrowserRecording);
@@ -81,11 +82,13 @@ const simulateBrowserRecording = async () => {
         const savePath = `./videos/${currentTime}.mp4`;
         await recorder.start(savePath);
         console.info('-- Recording started --');
+        await bot.telegram.sendMessage(6450576633, `Recording started at: ${(0, dayjs_1.default)().format('YYYY-MM-DD-HH-mm')}`);
         /** Record for 2 hours */
         const duration = 1000 * 60 * 60 * 2;
         await new Promise((resolve) => setTimeout(resolve, duration));
         await recorder.stop();
         console.info('-- Recording stopped --');
+        await bot.telegram.sendMessage(6450576633, `Recording stopped at: ${(0, dayjs_1.default)().format('YYYY-MM-DD-HH-mm')}`);
         await browser.close();
         const { location } = await saveVideoToS3(savePath);
         await sendVideoToTelegramBot(location);
@@ -99,6 +102,7 @@ const saveVideoToS3 = async (filePath) => {
      * Save video to s3 bucket
      */
     try {
+        const fileName = (0, dayjs_1.default)().format('YYYY-MM-DD-HH-mm');
         const s3 = new aws_sdk_1.default.S3({
             accessKeyId: process.env.AWS_ACCESS_KEY_ID,
             secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -106,7 +110,7 @@ const saveVideoToS3 = async (filePath) => {
         const fileContent = fs_1.default.readFileSync(filePath);
         const params = {
             Bucket: 'autoringen-fetcher-v2',
-            Key: 'screen-recordings/video.mp4',
+            Key: `screen-recordings/${fileName}.mp4`,
             Body: fileContent,
             ContentType: 'video/mp4',
         };
@@ -125,7 +129,6 @@ const sendVideoToTelegramBot = async (s3VideoUrl) => {
      * Send video to telegram bot
      */
     try {
-        const bot = new telegraf_1.Telegraf(process.env.TELEGRAM_BOT_TOKEN);
         await bot.telegram.sendMessage(6450576633, `New recording available at: ${s3VideoUrl}`);
         console.info('Video sent to telegram bot');
     }
