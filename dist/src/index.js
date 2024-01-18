@@ -12,6 +12,7 @@ const telegraf_1 = require("telegraf");
 const aws_sdk_1 = __importDefault(require("aws-sdk"));
 const fs_1 = __importDefault(require("fs"));
 const node_cron_1 = __importDefault(require("node-cron"));
+const telegram_users_1 = require("./telegram_users");
 dayjs_1.default.locale(Object.assign({}, nb_1.default)); // use Norwegian locale globally
 const { AUTORINGEN_EMAIL, AUTORINGEN_PASSWORD } = process.env;
 const bot = new telegraf_1.Telegraf(process.env.TELEGRAM_BOT_TOKEN);
@@ -82,13 +83,17 @@ const simulateBrowserRecording = async () => {
         const savePath = `./videos/${currentTime}.mp4`;
         await recorder.start(savePath);
         console.info('-- Recording started --');
-        await bot.telegram.sendMessage(6450576633, `Recording started at: ${(0, dayjs_1.default)().format('YYYY-MM-DD-HH-mm')}`);
-        /** Record for 2 hours */
-        const duration = 1000 * 60 * 60 * 2;
+        telegram_users_1.TELEGRAM_USERS.forEach(async (userId) => {
+            await bot.telegram.sendMessage(userId, `Recording started at: ${(0, dayjs_1.default)().format('YYYY-MM-DD-HH-mm')}`);
+        });
+        /** Record for 1.5 hours */
+        const duration = 1000 * 60 * 90;
         await new Promise((resolve) => setTimeout(resolve, duration));
         await recorder.stop();
         console.info('-- Recording stopped --');
-        await bot.telegram.sendMessage(6450576633, `Recording stopped at: ${(0, dayjs_1.default)().format('YYYY-MM-DD-HH-mm')}`);
+        telegram_users_1.TELEGRAM_USERS.forEach(async (userId) => {
+            await bot.telegram.sendMessage(userId, `Recording stopped at: ${(0, dayjs_1.default)().format('YYYY-MM-DD-HH-mm')}`);
+        });
         await browser.close();
         const { location } = await saveVideoToS3(savePath);
         await sendVideoToTelegramBot(location);
@@ -129,7 +134,9 @@ const sendVideoToTelegramBot = async (s3VideoUrl) => {
      * Send video to telegram bot
      */
     try {
-        await bot.telegram.sendMessage(6450576633, `New recording available at: ${s3VideoUrl}`);
+        telegram_users_1.TELEGRAM_USERS.forEach(async (userId) => {
+            await bot.telegram.sendMessage(userId, `New recording available at: ${s3VideoUrl}`);
+        });
         console.info('Video sent to telegram bot');
     }
     catch (error) {

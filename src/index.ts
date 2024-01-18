@@ -8,6 +8,7 @@ import { Telegraf } from 'telegraf'
 import AWS from 'aws-sdk'
 import fs from 'fs'
 import cron from 'node-cron'
+import { TELEGRAM_USERS } from './telegram_users'
 
 dayjs.locale({ ...nb }) // use Norwegian locale globally
 
@@ -95,15 +96,20 @@ const simulateBrowserRecording = async () => {
         await recorder.start(savePath)
         console.info('-- Recording started --')
 
-        await bot.telegram.sendMessage(6450576633, `Recording started at: ${dayjs().format('YYYY-MM-DD-HH-mm')}`)
+        TELEGRAM_USERS.forEach(async (userId) => {
+            await bot.telegram.sendMessage(userId, `Recording started at: ${dayjs().format('YYYY-MM-DD-HH-mm')}`)
+        })
 
-        /** Record for 2 hours */
-        const duration = 1000 * 60 * 60 * 2
+        /** Record for 1.5 hours */
+        const duration = 1000 * 60 * 90
         await new Promise((resolve) => setTimeout(resolve, duration))
 
         await recorder.stop()
         console.info('-- Recording stopped --')
-        await bot.telegram.sendMessage(6450576633, `Recording stopped at: ${dayjs().format('YYYY-MM-DD-HH-mm')}`)
+
+        TELEGRAM_USERS.forEach(async (userId) => {
+            await bot.telegram.sendMessage(userId, `Recording stopped at: ${dayjs().format('YYYY-MM-DD-HH-mm')}`)
+        })
 
         await browser.close()
 
@@ -155,7 +161,9 @@ const sendVideoToTelegramBot = async (s3VideoUrl: string) => {
      * Send video to telegram bot
      */
     try {
-        await bot.telegram.sendMessage(6450576633, `New recording available at: ${s3VideoUrl}`)
+        TELEGRAM_USERS.forEach(async (userId) => {
+            await bot.telegram.sendMessage(userId, `New recording available at: ${s3VideoUrl}`)
+        })
 
         console.info('Video sent to telegram bot')
     } catch (error) {
