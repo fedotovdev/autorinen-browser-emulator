@@ -18,8 +18,8 @@ const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN as string)
 
 const main = async () => {
     if (process.env.NODE_ENV === 'production') {
-        cron.schedule('0 11 * * *', simulateBrowserRecording)
-        cron.schedule('0 14 * * *', simulateBrowserRecording)
+        cron.schedule('0 11 * * 1-5', simulateBrowserRecording)
+        cron.schedule('0 14 * * 1-5', simulateBrowserRecording)
     } else {
         simulateBrowserRecording()
     }
