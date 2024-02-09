@@ -18,8 +18,8 @@ const { AUTORINGEN_EMAIL, AUTORINGEN_PASSWORD } = process.env;
 const bot = new telegraf_1.Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const main = async () => {
     if (process.env.NODE_ENV === 'production') {
-        node_cron_1.default.schedule('0 11 * * *', simulateBrowserRecording);
-        node_cron_1.default.schedule('0 14 * * *', simulateBrowserRecording);
+        node_cron_1.default.schedule('0 11 * * 1-5', simulateBrowserRecording);
+        node_cron_1.default.schedule('0 14 * * 1-5', simulateBrowserRecording);
     }
     else {
         simulateBrowserRecording();
