@@ -86,8 +86,8 @@ const simulateBrowserRecording = async () => {
         telegram_users_1.TELEGRAM_USERS.forEach(async (userId) => {
             await bot.telegram.sendMessage(userId, `Recording started at: ${(0, dayjs_1.default)().format('YYYY-MM-DD-HH-mm')}`);
         });
-        /** Record for 1.5 hours */
-        const duration = 1000 * 60 * 90;
+        /** Record for 1 hour */
+        const duration = 1000 * 60 * 60;
         await new Promise((resolve) => setTimeout(resolve, duration));
         await recorder.stop();
         console.info('-- Recording stopped --');
